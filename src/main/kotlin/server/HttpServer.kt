@@ -7,11 +7,17 @@ import io.ktor.server.engine.*
 import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.openjdk.nashorn.api.scripting.AbstractJSObject
 import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory
+import org.openjdk.nashorn.internal.objects.Global
+import org.openjdk.nashorn.internal.runtime.ConsString
+import org.openjdk.nashorn.internal.runtime.ECMAErrors
+import org.openjdk.nashorn.internal.runtime.ScriptRuntime
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 import top.e404.eapi.PL
 import top.e404.eapi.config.Config
+import java.io.File
 import javax.script.ScriptException
 import javax.script.SimpleBindings
 
@@ -22,6 +28,18 @@ object HttpServer {
     fun stop() {
         server?.stop(1000, 2000)
         server = null
+    }
+
+    fun defineJsFile(src: String): File {
+        val target = File(PL.dataFolder, src)
+        if (!target.exists() && !src.endsWith(".js")) {
+            // 让用户可选输入 .js 后缀名
+            val alternative = File(PL.dataFolder, "$src.js")
+            if (alternative.exists()) {
+                return alternative
+            }
+        }
+        return target
     }
 
     fun start() {
@@ -59,6 +77,17 @@ object HttpServer {
                                             .associate { it.key to it.value.firstOrNull() },
                                         "queryParameters" to call.queryParameters.entries()
                                             .associate { it.key to it.value.firstOrNull() },
+                                        "require" to object : AbstractJSObject() {
+                                            override fun call(thiz: Any, vararg args: Any): Any {
+                                                val from = args[0]
+                                                val src = if (from is ConsString) from.toString() else from
+                                                if (src is String) {
+                                                    val file = defineJsFile(src)
+                                                    return Global.load(thiz, file)
+                                                }
+                                                throw ECMAErrors.typeError("not.a.string", ScriptRuntime.safeToString(from))
+                                            }
+                                        }
                                     )
                                 )
                                 val result = scriptEngine.eval(routerConfig.script, bindings).toString()
