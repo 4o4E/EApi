@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "top.e404"
-version = "1.2.0"
+version = "1.3.0"
 val epluginVer = "1.4.0-SNAPSHOT"
 
 fun eplugin(module: String, version: String = epluginVer) = "top.e404.eplugin:eplugin-$module:$version"
@@ -37,8 +37,12 @@ dependencies {
     implementation("io.ktor:ktor-server-core-jvm:3.3.3")
     implementation("io.ktor:ktor-server-cio-jvm:3.3.3")
     implementation("io.ktor:ktor-server-call-logging-jvm:3.3.3")
+    implementation("io.ktor:ktor-client-core-jvm:3.3.3")
+    implementation("io.ktor:ktor-client-cio-jvm:3.3.3")
     // nashorn
     compileOnly("org.openjdk.nashorn:nashorn-core:15.7")
+    // hikari
+    compileOnly("com.zaxxer:HikariCP:7.0.2")
 }
 
 kotlin {

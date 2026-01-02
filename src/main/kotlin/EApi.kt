@@ -4,6 +4,7 @@ import org.bukkit.Bukkit
 import top.e404.eapi.command.Commands
 import top.e404.eapi.config.Config
 import top.e404.eapi.config.Lang
+import top.e404.eapi.db.DbManager
 import top.e404.eapi.server.HttpServer
 import top.e404.eplugin.EPlugin
 
@@ -29,11 +30,13 @@ open class EApi : EPlugin() {
         Lang.load(null)
         Config.load(null)
         Commands.register()
+        DbManager.loadAll()
         HttpServer.start()
     }
 
     override fun onDisable() {
         HttpServer.stop()
+        DbManager.stopAll()
         Bukkit.getScheduler().cancelTasks(this)
     }
 }

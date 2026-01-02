@@ -11,10 +11,53 @@ nashorn_params:
   - "-strict"
   - "--language=es6"
 
+# 数据库配置 可以在脚本中通过 sql(name, sql) 函数调用 返回值为 List<Map<String, Object>>
+databases:
+  # 数据库名字
+  default:
+    # clickhouse
+    # url: jdbc:clickhouse://localhost:8123/default
+    # driver: com.clickhouse.jdbc.ClickHouseDriver
+    # username: your-username
+    # password: your-password
+    # mysql
+    url: jdbc:mysql://localhost:3306/your_database
+    driver: com.mysql.cj.jdbc.Driver
+    username: your_username
+    password: your_password
+    # 连接池配置
+    pool:
+      maximumPoolSize: 10
+      minimumIdle: 2
+      idleTimeout: 600000
+      maxLifetime: 1800000
+      connectionTimeout: 30000
+
+    # 初始化执行的sql语句
+    init:
+      - |-
+        CREATE TABLE IF NOT EXISTS mc_player_online (
+          uuid CHAR(32) NOT NULL COMMENT '玩家UUID',
+          name VARCHAR(18) NOT NULL COMMENT '玩家名称',
+          login_time BIGINT NOT NULL COMMENT '登录时间',
+          logout_time BIGINT COMMENT '登出时间',
+          PRIMARY KEY (uuid, login_time)
+        ) ENGINE = Innodb DEFAULT CHARSET = utf8mb4 COMMENT = '玩家在线数据表';
+      - |-
+        CREATE TABLE IF NOT EXISTS mc_logs_test (
+          event_time DATETIME COMMENT '事件时间',
+          name VARCHAR(50) COMMENT '名称',
+          value VARCHAR(255) COMMENT '值'
+        ) ENGINE = Innodb DEFAULT CHARSET = utf8mb4 COMMENT = '测试日志表';
+
 # API路由设置
 # 支持 console.log (以及debug info warn error) 输出调试信息到控制台 前提是打开 debug 选项
 # fail(code: number, message: string) 可用来抛出错误响应
 # require(fileName: string) 用于加载外部js文件
+# sql(dbName: string, sql: string) 用于执行数据库操作 返回值为 List<Map<String, Object>>
+# request(url: string, method?: string, body?: string) 用于发送HTTP请求 返回值为 Deferred< status: number, body: string> 需要用 await(deferred) 接受
+# await(deferred) 用来等待异步操作完成
+# awaitAll(deferred[]) 用来等待多个异步操作完成
 # pathParameters.get 用来获取路径参数
 # queryParameters.get 用来获取查询参数
 routers:
@@ -76,3 +119,11 @@ routers:
         foo: example.foo,
         bar: example.bar()
       })
+  - method: GET
+    path: /api/server/test1
+    script: |-
+      const resp = await(request('http://localhost:8080/api/server/test'))
+      console.log(resp.status)
+      console.log(resp.body)
+
+      resp.body

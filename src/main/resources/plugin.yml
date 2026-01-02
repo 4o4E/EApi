@@ -11,6 +11,9 @@ libraries:
   # - io.ktor:ktor-server-cio-jvm:3.3.3
   # - io.ktor:ktor-server-call-logging-jvm:3.3.3
   - org.openjdk.nashorn:nashorn-core:15.7
+  - com.zaxxer:HikariCP:7.0.2
+  - com.mysql:mysql-connector-j:9.5.0
+  - com.clickhouse:clickhouse-jdbc:0.9.5
 permissions:
   eapi.admin:
     default: op

@@ -22,7 +22,8 @@ data class ConfigData(
     var server: HttpServerConfig,
     @SerialName("nashorn_params")
     var nashornParams: List<String>,
-    var routers: List<RouterConfig>
+    val databases: Map<String, DatabaseConfig>,
+    var routers: List<RouterConfig>,
 )
 
 @Serializable
@@ -36,4 +37,23 @@ data class RouterConfig(
     val method: String,
     val path: String,
     val script: String
+)
+
+@Serializable
+data class DatabaseConfig(
+    val url: String,
+    val driver: String,
+    val username: String,
+    val password: String,
+    val pool: PoolConfig,
+    val init: List<String>,
+)
+
+@Serializable
+data class PoolConfig(
+    val maximumPoolSize: Int,
+    val minimumIdle: Int,
+    val idleTimeout: Long,
+    val maxLifetime: Long,
+    val connectionTimeout: Long,
 )

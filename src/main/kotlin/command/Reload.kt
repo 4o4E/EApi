@@ -4,6 +4,7 @@ import org.bukkit.command.CommandSender
 import top.e404.eapi.PL
 import top.e404.eapi.config.Config
 import top.e404.eapi.config.Lang
+import top.e404.eapi.db.DbManager
 import top.e404.eapi.server.HttpServer
 import top.e404.eplugin.command.ECommand
 
@@ -20,6 +21,8 @@ object Reload : ECommand(
         plugin.runTaskAsync {
             Lang.load(sender)
             Config.load(sender)
+            DbManager.stopAll()
+            DbManager.loadAll()
             HttpServer.stop()
             HttpServer.start()
             sender.sendMessage(Lang["command.reload_done"])
