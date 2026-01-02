@@ -21,10 +21,20 @@ data class ConfigData(
     var debug: Boolean,
     var server: HttpServerConfig,
     @SerialName("nashorn_params")
-    var nashornParams: List<String>,
+    var nashorn: NashornConfig,
     val databases: Map<String, DatabaseConfig>,
     var routers: List<RouterConfig>,
 )
+
+@Serializable
+data class NashornConfig(
+    val params: List<String>,
+    val variables: Map<String, String>
+) {
+    val varArray by lazy {
+        variables.map { (k, v) -> k to v }.toTypedArray()
+    }
+}
 
 @Serializable
 data class HttpServerConfig(

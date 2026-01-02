@@ -7,9 +7,13 @@ server:
 
 # Nashorn引擎参数设置
 # 每次reload后都会重新创建js引擎并应用参数
-nashorn_params:
-  - "-strict"
-  - "--language=es6"
+nashorn:
+  # 定义全局变量
+  variables:
+    serverName: "MyMinecraftServer"
+  params:
+    - "-strict"
+    - "--language=es6"
 
 # 数据库配置 可以在脚本中通过 sql(name, sql) 函数调用 返回值为 List<Map<String, Object>>
 databases:

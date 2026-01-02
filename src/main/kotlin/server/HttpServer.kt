@@ -34,7 +34,7 @@ object HttpServer {
         val config = Config.config
         if (!config.server.enable) return
         val scriptEngine = factory.getScriptEngine(
-            config.nashornParams.toTypedArray(),
+            config.nashorn.params.toTypedArray(),
             PL.javaClass.classLoader
         )
         server = embeddedServer(CIO, config.server.port) {
@@ -74,6 +74,7 @@ object HttpServer {
                 val bindings = SimpleBindings(
                     mutableMapOf<String, Any>(
                         *jsModules,
+                        *Config.config.nashorn.varArray,
                         "pathParameters" to call.pathParameters.entries().associate {
                             it.key to it.value.firstOrNull()
                         },
