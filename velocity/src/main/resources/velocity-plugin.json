@@ -1,0 +1,9 @@
+{
+  "id": "eapi-velocity",
+  "name": "EApiVelocity",
+  "version": "${version}",
+  "authors": [
+    "404E"
+  ],
+  "main": "top.e404.eapi.EApiVelocity"
+}

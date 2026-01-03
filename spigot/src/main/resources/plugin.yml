@@ -1,0 +1,17 @@
+name: EApi
+version: ${version}
+main: top.e404.eapi.EApi
+api-version: 1.13
+authors: [ 404E ]
+commands:
+  eapi:
+    description: 插件主命令
+libraries:
+  - org.openjdk.nashorn:nashorn-core:15.7
+  - com.zaxxer:HikariCP:7.0.2
+  - com.mysql:mysql-connector-j:9.5.0
+  - com.clickhouse:clickhouse-jdbc:0.9.5
+permissions:
+  eapi.admin:
+    default: op
+    description: 允许使用插件管理指令

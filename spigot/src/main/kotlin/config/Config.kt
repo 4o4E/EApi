@@ -1,0 +1,16 @@
+package top.e404.eapi.config
+
+import com.charleskorn.kaml.Yaml
+import com.charleskorn.kaml.YamlConfiguration
+import top.e404.eapi.PL
+import top.e404.eapi.common.config.ConfigData
+import top.e404.eplugin.config.JarConfigDefault
+import top.e404.eplugin.config.KtxConfig
+
+object Config : KtxConfig<ConfigData>(
+    plugin = PL,
+    path = "config.yml",
+    default = JarConfigDefault(PL, "config.yml"),
+    serializer = ConfigData.serializer(),
+    format = Yaml(configuration = YamlConfiguration(strictMode = false))
+)
