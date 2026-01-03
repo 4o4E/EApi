@@ -55,6 +55,7 @@ databases:
         CREATE TABLE IF NOT EXISTS mc_player_online (
           uuid CHAR(32) NOT NULL COMMENT '玩家UUID',
           name VARCHAR(18) NOT NULL COMMENT '玩家名称',
+          server VARCHAR(63) NOT NULL COMMENT '服务器ID',
           login_time BIGINT NOT NULL COMMENT '登录时间',
           logout_time BIGINT COMMENT '登出时间',
           PRIMARY KEY (uuid, login_time)
