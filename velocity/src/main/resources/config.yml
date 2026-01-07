@@ -56,6 +56,11 @@ databases:
 # 支持 console.log (以及debug info warn error) 输出调试信息到控制台 前提是打开 debug 选项
 # fail(code: number, message: string) 可用来抛出错误响应
 # require(fileName: string) 用于加载外部js文件
+# sql(dbName: string, sql: string) 用于执行数据库操作 返回值为 List<Map<String, Object>>
+# sync<T>(() => T) 用于执行同步操作 并返回结果 应该仅在调用检查调用线程的函数时使用
+# request(url: string, method?: string, body?: string) 用于发送HTTP请求 返回值为 Deferred<{status: number, body: string}> 需要用 await(deferred) 接受
+# await(deferred) 用来等待异步操作完成
+# awaitAll(deferred[]) 用来等待多个异步操作完成
 # pathParameters.get 用来获取路径参数
 # queryParameters.get 用来获取查询参数
 routers:
@@ -68,41 +73,43 @@ routers:
         "players": e.getPlayersConnected().toArray().map(p => p.getUsername())
       })))
   - method: GET
-    path: /api/server/{playerId}/skin
+    path: /api/server/{playerId}/skinName
     script: |-
-      var SkinsRestorerProvider = Java.type('net.skinsrestorer.api.SkinsRestorerProvider');
-      var UUID = Java.type('java.util.UUID');
-      var StandardCharsets = Java.type('java.nio.charset.StandardCharsets');
+      const SkinsRestorerProvider = Java.type('net.skinsrestorer.api.SkinsRestorerProvider');
+      const UUID = Java.type('java.util.UUID');
+      const Base64 = Java.type('java.util.Base64');
+      const String = Java.type('java.lang.String');
+      const StandardCharsets = Java.type('java.nio.charset.StandardCharsets');
       
-      var result = {};
+      const result = {};
       
-      var playerName = pathParameters.get("playerId");
+      const playerName = pathParameters.get("playerId");
       var targetUUID = null;
-  
-      // 1. 尝试获取在线玩家 (最准确，如果在线直接用)
-      if (typeof server !== 'undefined') {
-          var playerOpt = server.getPlayer(playerName);
-          if (playerOpt.isPresent()) {
-              targetUUID = playerOpt.get().getUniqueId();
-          }
-      }
-  
-      // 2. 如果玩家离线，且服务器是离线模式，手动计算 Offline UUID
-      // 算法标准：UUID.nameUUIDFromBytes("OfflinePlayer:" + name)
-      if (targetUUID === null && playerName) {
-          var offlineStr = "OfflinePlayer:" + playerName;
-          targetUUID = UUID.nameUUIDFromBytes(offlineStr.getBytes(StandardCharsets.UTF_8));
-      }
-  
-      if (!targetUUID) throw new Error("Cannot determine UUID for player: " + playerName);
-  
-      // 3. 获取 SkinsRestorer API
-      var srApi = SkinsRestorerProvider.get();
       
-      // 4. 查询存储 (查询该 UUID 当前设置了什么皮肤)
-      // getPlayerStorage() 管理玩家的数据绑定
-      var userSkinOpt = srApi.getPlayerStorage().getSkinOfUser(targetUUID);
-
-      if (!userSkinOpt.isPresent()) throw new Error("No skin data found for UUID: " + targetUUID.toString());
+      var playerOpt = server.getPlayer(playerName);
+      if (playerOpt.isPresent()) {
+        targetUUID = playerOpt.get().getUniqueId();
+      }
       
-      JSON.stringify(userSkinOpt.get());
+      if (targetUUID === null) {
+        var offlineStr = "OfflinePlayer:" + playerName;
+        targetUUID = UUID.nameUUIDFromBytes(offlineStr.getBytes(StandardCharsets.UTF_8));
+      }
+      
+      if (!targetUUID) fail(400, "Cannot determine UUID for player: " + playerName);
+      
+      const srApi = SkinsRestorerProvider.get();
+      
+      const playerStorage = srApi.getPlayerStorage();
+      if (!playerStorage) fail(500, 'playerStorage undefined');
+      var userSkinOpt = playerStorage.getSkinOfPlayer(targetUUID);
+      
+      if (!userSkinOpt.isPresent()) fail(200, playerName);
+      
+      const userSkin = userSkinOpt.get()
+      
+      const value = new String(Base64.getDecoder().decode(userSkin.getValue()), StandardCharsets.UTF_8)
+      const profile = JSON.parse(value)
+      // console.log('profile', profile)
+      
+      profile.profileName

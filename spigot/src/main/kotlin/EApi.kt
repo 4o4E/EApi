@@ -25,13 +25,16 @@ open class EApi : EPlugin() {
         EApiCommon.instance = object : EApiCommon {
             override val config get() = Config.config
             override val dataFolder = getDataFolder()
+            override val isPrimaryThread get() = Bukkit.isPrimaryThread()
             override fun debug(message: String) = PL.debug(message)
             override fun debug(message: () -> String) = PL.debug(true, message)
             override fun warn(message: String, throwable: Throwable?) = PL.warn(message, throwable)
+            override fun runTask(task: () -> Unit) {
+                PL.runTask { task() }
+            }
+
             override fun runTaskLater(delayMillis: Long, task: () -> Unit) {
-                PL.runTaskLater(delayMillis) {
-                    task()
-                }
+                PL.runTaskLater(delayMillis) { task() }
             }
 
             override val jsModules = EApiCommon.jsModules

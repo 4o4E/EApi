@@ -72,7 +72,8 @@ databases:
 # fail(code: number, message: string) 可用来抛出错误响应
 # require(fileName: string) 用于加载外部js文件
 # sql(dbName: string, sql: string) 用于执行数据库操作 返回值为 List<Map<String, Object>>
-# request(url: string, method?: string, body?: string) 用于发送HTTP请求 返回值为 Deferred< status: number, body: string> 需要用 await(deferred) 接受
+# sync<T>(() => T) 用于执行同步操作 并返回结果 应该仅在调用检查调用线程的函数时使用
+# request(url: string, method?: string, body?: string) 用于发送HTTP请求 返回值为 Deferred<{status: number, body: string}> 需要用 await(deferred) 接受
 # await(deferred) 用来等待异步操作完成
 # awaitAll(deferred[]) 用来等待多个异步操作完成
 # pathParameters.get 用来获取路径参数
@@ -117,13 +118,13 @@ routers:
           "pitch": loc.getPitch()
       });
   - method: GET
-    path: /api/server/test
+    path: /api/test/require
     script: |-
       // plugins/EApi/foo.js
 
       // const module = {
-      //     foo: 'text1',
-      //     bar() {
+      //   foo: 'text1',
+      //   bar() {
       //     return 'text2'
       //   }
       // };
@@ -137,10 +138,24 @@ routers:
         bar: example.bar()
       })
   - method: GET
-    path: /api/server/test1
+    path: /api/test/request
     script: |-
-      const resp = await(request('http://localhost:8080/api/server/test'))
-      console.log(resp.status)
-      console.log(resp.body)
+      const req1 = request('https://example.com/', 'GET');
+      const req2 = request('http://example.com/', 'GET');
+      const respList = awaitAll([req1, req2]);
+      console.log(respList[0].status);
+      console.log(respList[0].body);
+      console.log(respList[1].status);
+      console.log(respList[1].body);
 
-      resp.body
+      JSON.stringify({req1: respList[0], req2: respList[1]});
+  - method: GET
+    path: /api/test/mainThread
+    script: |-
+      const Bukkit = Java.type('org.bukkit.Bukkit');
+      JSON.stringify(Bukkit.isPrimaryThread())
+  - method: GET
+    path: /api/test/syncMainThread
+    script: |-
+      const Bukkit = Java.type('org.bukkit.Bukkit');
+      JSON.stringify(sync(() => Bukkit.isPrimaryThread()))

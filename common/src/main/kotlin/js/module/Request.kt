@@ -19,7 +19,7 @@ import java.net.URI
 
 object Request : AbstractJSObject() {
     object HttpProxySelector : ProxySelector() {
-        private val config get() = EApiCommon.instance.config.proxy
+        private val config inline get() = EApiCommon.instance.config.proxy
         override fun select(uri: URI): List<Proxy> {
             if (!config.enable) {
                 return listOf(Proxy.NO_PROXY)
@@ -41,7 +41,7 @@ object Request : AbstractJSObject() {
         }
     }
 
-    private var client: HttpClient = HttpClient(OkHttp) {
+    private val client: HttpClient = HttpClient(OkHttp) {
         engine {
             config {
                 proxySelector(HttpProxySelector)
@@ -64,7 +64,7 @@ object Request : AbstractJSObject() {
         }
 
         return scope.async {
-            val resp = client!!.request(url) {
+            val resp = client.request(url) {
                 method = httpMethod
                 bodyString?.let { setBody(it) }
             }
